@@ -1,4 +1,4 @@
-function feature = FeatureExtract(frIsequence,sigma,theta)
+function [feature,sigma,theta] = FeatureExtract(frIsequence)
 %feature = pausefind(frIsequence,sigma,theta) used for find the
 %feature given the pitch, correlation and intensity.
 %
@@ -13,14 +13,13 @@ function feature = FeatureExtract(frIsequence,sigma,theta)
 %----------------------------------------------------
 %Code Authors:FEIYANG LIU
 
-length = size(frIsequence,2);
+peak = max(frIsequence(1,:)) / 2;
 
-
-freq = pausefind(frIsequence,sigma,theta);
+[freq,sigma,theta] = pausefind(frIsequence);
 
 upperbound = max(freq);
 lowbound = min(freq);
-peak = 500;
+
 
 %if maxpoint is smaller than upperbound, indicates the noise/silent has
 %been repalced;else use the lowbound to replace the peak point.
@@ -47,13 +46,13 @@ minpoint = min(series);
 
 %feature = (freq - minpoint) / (maxpoint - minpoint);
 feature = log(freq) - log(minpoint);
-feature(find(feature < 0)) = 0;
+feature(find(feature < 0)) = -1;
 %find the mean and variance of the melody, add noises to vacant region
 
-meanvalue = mean(feature);
-stdvalue = std(feature(find(feature ~= 0)));
-len = size(find(feature == 0),2);
-feature(find(feature == 0)) = meanvalue + stdvalue * ...
+meanvalue = mean(feature(find(feature ~= -1)));
+stdvalue = std(feature(find(feature ~= -1)));
+len = size(find(feature == -1),2);
+feature(find(feature == -1)) = meanvalue + stdvalue * ...
   (2 * rand(1,len) - 1);
 
 %transform the output relative frequency into semitones, the length of one
